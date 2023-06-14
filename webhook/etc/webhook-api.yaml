@@ -1,0 +1,20 @@
+Name: webhook-api
+Host: 0.0.0.0
+Port: 14001
+
+#监控
+Prometheus:
+  Host: 0.0.0.0
+  Port: 14000
+  Path: /metrics
+
+
+DBUri: ${DB_URI}
+Logger:
+  Level: debug
+  ServiceName: alinLab-webhook
+  MODE: console
+  Encoding: plain
+
+MaxConnections: 100 # 最大同时在线数目
+EXPIRETIME: 60 
