@@ -9,16 +9,19 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-func WebhookHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func WebhookCalledHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req types.Request
-		if err := httpx.Parse(r, &req); err != nil {
+		// if err := httpx.Parse(r, &req); err != nil {
+		// 	httpx.ErrorCtx(r.Context(), w, err)
+		// 	return
+		// }
+		if err := httpx.ParsePath(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
-
-		l := logic.NewWebhookLogic(r.Context(), svcCtx)
-		resp, err := l.Webhook(&req)
+		l := logic.NewWebhookCalledLogic(r.Context(), svcCtx)
+		resp, err := l.WebhookCalled(&req, r)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

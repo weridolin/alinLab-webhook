@@ -3,13 +3,13 @@ Host: 0.0.0.0
 Port: 14001
 
 #监控
-Prometheus:
-  Host: 0.0.0.0
-  Port: 14000
-  Path: /metrics
+# Prometheus:
+#   Host: 0.0.0.0
+#   Port: 14000
+#   Path: /metrics
 
 
-DBUri: ${DB_URI}
+DBUri: root:werido@tcp(8.131.78.84:3306)/simple_notification?charset=utf8mb4&parseTime=true
 Logger:
   Level: debug
   ServiceName: alinLab-webhook

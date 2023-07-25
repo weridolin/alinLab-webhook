@@ -1,12 +1,12 @@
 type Request {
-	uuid string `path:"uuid"`
+	Uuid string `path:"uuid"`
 }
 
 type Response {
 	Body    string `json:"body"`
-	Params string `json:"params"`
-	Headers  string `json:"header"`
-	Form 	string `json:"form"`
+	Params  string `json:"params"`
+	Headers string `json:"header"`
+	Form    string `json:"form"`
 }
 
 type PaginationParams {
@@ -15,19 +15,30 @@ type PaginationParams {
 }
 
 type QueryHistoryRequest {
-	uuid string `path:"uuid"`
+	Uuid string `path:"uuid"`
 	PaginationParams
 }
 
+type HistoryItem {
+	Uuid        string            `json:"uuid"`
+	Header      map[string]string `json:"header"`
+	Raw         string            `json:"raw"`
+	QueryParams map[string]string `json:"query_params"`
+	FormData    map[string]string `json:"form_data"`
+	Host        string            `json:"host"`
+	Method      string            `json:"method"`
+	UserID      int               `json:"user_id"`
+}
+
 type QueryHistoryResponse {
-	Total int `json:"total"`
+	Total int           `json:"total"`
 	Items []HistoryItem `json:"items"`
 }
 
 service webhook-api {
-	@handler WebhookHandler
-	get /api/v1/webhook/:uuid(Request) returns (Response)
-
+	@handler WebhookCalledHandler
+	get /webhook/api/v1/:uuid(Request) returns (Response)
+	
 	@handler historyHandler
-	get /api/v1/webhook/:uuid/history(PaginationParams) returns (QueryHistoryResponse)	
+	get /webhook/api/v1/:uuid/history(PaginationParams) returns (QueryHistoryResponse)
 }

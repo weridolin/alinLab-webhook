@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/joho/godotenv"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/config"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/handler"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
@@ -15,13 +14,13 @@ import (
 
 var configFile = flag.String("f", "etc/webhook-api.yaml", "the config file")
 
-func init() {
-	// 读取.env环境变量
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic("读取.env环境变量失败")
-	}
-}
+// func init() {
+// 	// 读取.env环境变量
+// 	err := godotenv.Load(".env")
+// 	if err != nil {
+// 		panic("读取.env环境变量失败")
+// 	}
+// }
 
 func main() {
 	flag.Parse()

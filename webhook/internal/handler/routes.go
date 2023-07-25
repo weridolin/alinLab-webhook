@@ -14,8 +14,18 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		[]rest.Route{
 			{
 				Method:  http.MethodGet,
-				Path:    "/api/v1/webhook/:name",
-				Handler: WebhookHandler(serverCtx),
+				Path:    "/webhook/api/v1/:uuid",
+				Handler: WebhookCalledHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/webhook/api/v1/:uuid",
+				Handler: WebhookCalledHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/webhook/api/v1/:uuid/history",
+				Handler: historyHandler(serverCtx),
 			},
 		},
 	)

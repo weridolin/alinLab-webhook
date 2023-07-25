@@ -2,9 +2,38 @@
 package types
 
 type Request struct {
-	Name string `path:"name,options=you|me"`
+	Uuid string `path:"uuid"`
 }
 
 type Response struct {
-	Message string `json:"message"`
+	Body    string `json:"body"`
+	Params  string `json:"params"`
+	Headers string `json:"header"`
+	Form    string `json:"form"`
+}
+
+type PaginationParams struct {
+	Page int `form:"page" validate:"required,min=1"`
+	Size int `form:"size" validate:"required,min=1,max=1000"`
+}
+
+type QueryHistoryRequest struct {
+	Uuid string `path:"uuid"`
+	PaginationParams
+}
+
+type HistoryItem struct {
+	Uuid        string            `json:"uuid"`
+	Header      map[string]string `json:"header"`
+	Raw         string            `json:"raw"`
+	QueryParams map[string]string `json:"query_params"`
+	FormData    map[string]string `json:"form_data"`
+	Host        string            `json:"host"`
+	Method      string            `json:"method"`
+	UserID      int               `json:"user_id"`
+}
+
+type QueryHistoryResponse struct {
+	Total int           `json:"total"`
+	Items []HistoryItem `json:"items"`
 }
