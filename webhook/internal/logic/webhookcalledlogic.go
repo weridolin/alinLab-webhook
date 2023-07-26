@@ -2,9 +2,13 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
@@ -30,14 +34,30 @@ func NewWebhookCalledLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Web
 
 func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) (resp *types.Response, err error) {
 	// userID := l.ctx.Value("id")
-
 	fmt.Println("host:", r.RemoteAddr)
 	header := l.ParseHeader(r)
 	fmt.Println("header:", header)
 	queryParams := l.ParseQueryParams(r)
 	fmt.Println("queryParams:", queryParams)
-	// formData := l.ParseFormData(r)
-	// fmt.Println("formData:", formData)
+
+	var formData = make(map[string]string)
+	urlEncodeForm, err := l.ParsePostForm(r)
+	if err != nil {
+		fmt.Println("parse post form error:", err)
+	} else {
+		for k, v := range urlEncodeForm {
+			formData[k] = strings.Join(v, ",")
+		}
+	}
+	err = r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		fmt.Println("parse multipart form error:", err)
+	} else {
+		for k, v := range r.MultipartForm.Value {
+			formData[k] = strings.Join(v, ",")
+		}
+	}
+	fmt.Println("formData:", formData)
 	raw := l.ParseRaw(r)
 	fmt.Println("raw:", raw)
 	l.ParseRaw(r)
@@ -48,7 +68,7 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 		QueryParams: queryParams,
 		Host:        r.RemoteAddr,
 		Method:      r.Method,
-		// UserID:      userID.(int),
+		FormData:    formData,
 	}
 	err = models.CreateNewResourceCalledHistory(l.svcCtx.DB, &newHistory)
 	if err != nil {
@@ -99,4 +119,103 @@ func (l *WebhookCalledLogic) ParseRaw(r *http.Request) string {
 		return ""
 	}
 	return string(data)
+}
+
+type maxBytesReader struct {
+	w   http.ResponseWriter
+	r   io.ReadCloser // underlying reader
+	n   int64         // max bytes remaining
+	err error         // sticky error
+}
+
+func (l *maxBytesReader) Read(p []byte) (n int, err error) {
+	if l.err != nil {
+		return 0, l.err
+	}
+	if len(p) == 0 {
+		return 0, nil
+	}
+	// If they asked for a 32KB byte read but only 5 bytes are
+	// remaining, no need to read 32KB. 6 bytes will answer the
+	// question of the whether we hit the limit or go past it.
+	if int64(len(p)) > l.n+1 {
+		p = p[:l.n+1]
+	}
+	n, err = l.r.Read(p)
+
+	if int64(n) <= l.n {
+		l.n -= int64(n)
+		l.err = err
+		return n, err
+	}
+
+	n = int(l.n)
+	l.n = 0
+
+	// The server code and client code both use
+	// maxBytesReader. This "requestTooLarge" check is
+	// only used by the server code. To prevent binaries
+	// which only using the HTTP Client code (such as
+	// cmd/go) from also linking in the HTTP server, don't
+	// use a static type assertion to the server
+	// "*response" type. Check this interface instead:
+	type requestTooLarger interface {
+		requestTooLarge()
+	}
+	if res, ok := l.w.(requestTooLarger); ok {
+		res.requestTooLarge()
+	}
+	l.err = errors.New("http: request body too large")
+	return n, l.err
+}
+
+func (l *maxBytesReader) Close() error {
+	return l.r.Close()
+}
+
+func (l *WebhookCalledLogic) ParsePostForm(r *http.Request) (vs url.Values, err error) {
+	if r.Body == nil {
+		err = errors.New("missing form body")
+		return
+	}
+	ct := r.Header.Get("Content-Type")
+	// RFC 7231, section 3.1.1.5 - empty type
+	//   MAY be treated as application/octet-stream
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+	ct, _, err = mime.ParseMediaType(ct)
+	switch {
+	case ct == "application/x-www-form-urlencoded":
+		// fmt.Println(">>>>> application/x-www-form-urlencoded")
+		var reader io.Reader = r.Body
+		maxFormSize := int64(1<<63 - 1)
+		if _, ok := r.Body.(*maxBytesReader); !ok {
+			maxFormSize = int64(10 << 20) // 10 MB is a lot of text.
+			reader = io.LimitReader(r.Body, maxFormSize+1)
+		}
+		b, e := io.ReadAll(reader)
+		if e != nil {
+			if err == nil {
+				err = e
+			}
+			break
+		}
+		if int64(len(b)) > maxFormSize {
+			err = errors.New("http: POST too large")
+			return
+		}
+		vs, e = url.ParseQuery(string(b))
+		if err == nil {
+			err = e
+		}
+	case ct == "multipart/form-data":
+		// handled by ParseMultipartForm (which is calling us, or should be)
+		// TODO(bradfitz): there are too many possible
+		// orders to call too many functions here.
+		// Clean this up and write more tests.
+		// request_test.go contains the start of this,
+		// in TestParseMultipartFormOrder and others.
+	}
+	return
 }

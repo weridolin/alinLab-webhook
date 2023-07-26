@@ -20,6 +20,7 @@ func WebhookCalledHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
+
 		l := logic.NewWebhookCalledLogic(r.Context(), svcCtx)
 		resp, err := l.WebhookCalled(&req, r)
 		if err != nil {

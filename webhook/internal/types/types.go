@@ -34,6 +34,6 @@ type HistoryItem struct {
 }
 
 type QueryHistoryResponse struct {
-	Total int           `json:"total"`
+	Total int64           `json:"total"`
 	Items []HistoryItem `json:"items"`
 }

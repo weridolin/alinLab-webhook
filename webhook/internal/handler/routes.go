@@ -23,6 +23,31 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: WebhookCalledHandler(serverCtx),
 			},
 			{
+				Method:  http.MethodPut,
+				Path:    "/webhook/api/v1/:uuid",
+				Handler: WebhookCalledHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPatch,
+				Path:    "/webhook/api/v1/:uuid",
+				Handler: WebhookCalledHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodDelete,
+				Path:    "/webhook/api/v1/:uuid",
+				Handler: WebhookCalledHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodOptions,
+				Path:    "/webhook/api/v1/:uuid",
+				Handler: WebhookCalledHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodHead,
+				Path:    "/webhook/api/v1/:uuid",
+				Handler: WebhookCalledHandler(serverCtx),
+			},
+			{
 				Method:  http.MethodGet,
 				Path:    "/webhook/api/v1/:uuid/history",
 				Handler: historyHandler(serverCtx),

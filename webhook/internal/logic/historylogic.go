@@ -5,6 +5,7 @@ import (
 
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/types"
+	"github.com/weridolin/alinLab-webhook/webhook/models"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -23,8 +24,27 @@ func NewHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *HistoryLo
 	}
 }
 
-func (l *HistoryLogic) History(req *types.PaginationParams) (resp *types.QueryHistoryResponse, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+func (l *HistoryLogic) History(req *types.QueryHistoryRequest) (resp *types.QueryHistoryResponse, err error) {
+	//count
+	var count int64
+	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Count(&count)
+	var records []*models.ResourceCalledHistory
+	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Find(&records).Limit(req.Size).Offset((req.Size - 1) * req.Page).Order("id desc")
+	var resItems []types.HistoryItem
+	for _, record := range records {
+		resItems = append(resItems, types.HistoryItem{
+			Header:      record.Header,
+			Raw:         record.Raw,
+			QueryParams: record.QueryParams,
+			FormData:    record.FormData,
+			Host:        record.Host,
+			Method:      record.Method,
+			UserID:      record.UserID,
+			Uuid:        record.Uuid,
+		})
+	}
+	return &types.QueryHistoryResponse{
+		Items: resItems,
+		Total: count,
+	}, nil
 }
