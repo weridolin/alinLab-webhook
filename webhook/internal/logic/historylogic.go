@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/types"
@@ -26,10 +27,11 @@ func NewHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *HistoryLo
 
 func (l *HistoryLogic) History(req *types.QueryHistoryRequest) (resp *types.QueryHistoryResponse, err error) {
 	//count
+	fmt.Println(req.Uuid, req.Page, req.Size)
 	var count int64
 	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Count(&count)
 	var records []*models.ResourceCalledHistory
-	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Find(&records).Limit(req.Size).Offset((req.Size - 1) * req.Page).Order("id desc")
+	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Offset((req.Page - 1) * req.Size).Limit(req.Size).Order("id desc").Find(&records)
 	var resItems []types.HistoryItem
 	for _, record := range records {
 		resItems = append(resItems, types.HistoryItem{
