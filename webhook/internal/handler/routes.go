@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
+	"github.com/weridolin/alinLab-webhook/webhook/ws"
 
 	"github.com/zeromicro/go-zero/rest"
 )
@@ -51,6 +52,30 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodGet,
 				Path:    "/webhook/api/v1/:uuid/history",
 				Handler: historyHandler(serverCtx),
+			},
+		},
+	)
+	//ws
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method: http.MethodGet,
+				Path:   "/webhook/ws",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					ws.ServeWs(serverCtx.WebsocketManager, w, r)
+				},
+			},
+		},
+	)
+	//socket.io
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method: http.MethodGet,
+				Path:   "/webhook/socket.io",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					serverCtx.SocketIOServer.ServeHTTP(w, r)
+				},
 			},
 		},
 	)

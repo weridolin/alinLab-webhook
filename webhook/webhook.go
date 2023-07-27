@@ -35,5 +35,19 @@ func main() {
 	handler.RegisterHandlers(server, ctx)
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
+
+	// WEBSOCKET
+	go ctx.WebsocketManager.Start()
+
+	// socket.io
+	go func() {
+		if err := ctx.SocketIOServer.Serve(); err != nil {
+			fmt.Println("socketio listen error: %s\n", err)
+		}
+	}()
+	defer ctx.SocketIOServer.Close()
+	go ctx.SocketIOManager.Start()
+
+	// HTTP
 	server.Start()
 }

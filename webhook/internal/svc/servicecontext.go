@@ -1,8 +1,11 @@
 package svc
 
 import (
+	s "github.com/googollee/go-socket.io"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/config"
 	"github.com/weridolin/alinLab-webhook/webhook/models"
+	socketio "github.com/weridolin/alinLab-webhook/webhook/socketio"
+	"github.com/weridolin/alinLab-webhook/webhook/ws"
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -10,8 +13,11 @@ import (
 )
 
 type ServiceContext struct {
-	Config config.Config
-	DB     *gorm.DB
+	Config           config.Config
+	DB               *gorm.DB
+	WebsocketManager *ws.WebSocketManager
+	SocketIOServer   *s.Server
+	SocketIOManager  *socketio.SocketIOConnectionManager
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -25,8 +31,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		logx.Error(err)
 	}
 	db.AutoMigrate(&models.ResourceCalledHistory{})
+	var socketIOManager = socketio.NewSocketIOConnectionManager()
 	return &ServiceContext{
-		Config: c,
-		DB:     db,
+		Config:           c,
+		DB:               db,
+		WebsocketManager: ws.NewWebSocketManager(),
+		SocketIOServer:   socketio.NewSocketIoServer(socketIOManager),
+		SocketIOManager:  socketIOManager,
 	}
 }

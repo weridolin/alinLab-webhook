@@ -3,8 +3,10 @@ module github.com/weridolin/alinLab-webhook
 go 1.18
 
 require (
-	github.com/joho/godotenv v1.5.1
+	github.com/googollee/go-socket.io v1.7.0
+	github.com/gorilla/websocket v1.5.0
 	github.com/zeromicro/go-zero v1.5.3
+	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.2
 )
 
@@ -15,8 +17,11 @@ require (
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-sql-driver/mysql v1.7.1 // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/gomodule/redigo v1.8.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
