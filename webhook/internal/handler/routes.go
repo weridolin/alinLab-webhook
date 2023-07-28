@@ -72,7 +72,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		[]rest.Route{
 			{
 				Method: http.MethodGet,
-				Path:   "/webhook/socket.io",
+				Path:   "/webhook/socketio",
 				Handler: func(w http.ResponseWriter, r *http.Request) {
 					serverCtx.SocketIOServer.ServeHTTP(w, r)
 				},
