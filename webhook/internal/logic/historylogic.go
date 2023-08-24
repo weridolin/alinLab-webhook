@@ -31,7 +31,7 @@ func (l *HistoryLogic) History(req *types.QueryHistoryRequest) (resp *types.Quer
 	var count int64
 	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Count(&count)
 	var records []*models.ResourceCalledHistory
-	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Offset((req.Page - 1) * req.Size).Limit(req.Size).Order("id desc").Find(&records)
+	l.svcCtx.DB.Model(&models.ResourceCalledHistory{}).Where(map[string]string{"uuid": req.Uuid}).Offset((req.Page - 1) * req.Size).Limit(req.Size).Order("updated_at desc").Find(&records)
 	var resItems []types.HistoryItem
 	for _, record := range records {
 		resItems = append(resItems, types.HistoryItem{
@@ -43,6 +43,7 @@ func (l *HistoryLogic) History(req *types.QueryHistoryRequest) (resp *types.Quer
 			Method:      record.Method,
 			UserID:      record.UserID,
 			Uuid:        record.Uuid,
+			Updated:     record.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 	return &types.QueryHistoryResponse{

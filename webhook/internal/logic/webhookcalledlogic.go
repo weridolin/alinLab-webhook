@@ -70,6 +70,8 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 		Host:        r.RemoteAddr,
 		Method:      r.Method,
 		FormData:    formData,
+		// UserID:      0,
+		// UpdatedAt:  time.,
 	}
 	err = models.CreateNewResourceCalledHistory(l.svcCtx.DB, &newHistory)
 	if err != nil {
@@ -85,11 +87,11 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 			fmt.Println("JSON编码失败:", err)
 		}
 		// 将JSON格式的字节切片转换为字符串
-		fmt.Println("send call record to socketio client", newHistory.Uuid)
+		fmt.Println("send call record to socket io client", newHistory.Uuid)
 		jsonString := string(jsonBytes)
 		client.Conn.Emit("msg", jsonString)
 	} else {
-		fmt.Println("socketio client  not connect,ignore..")
+		fmt.Println("socket io client  not connect,ignore..")
 	}
 
 	// 如果websocket已经建立连接，则发送这次调用结果
@@ -101,7 +103,7 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 			fmt.Println("JSON编码失败:", err)
 		}
 		// 将JSON格式的字节切片转换为字符串
-		fmt.Println("send call record to socketio client", newHistory.Uuid)
+		fmt.Println("send call record to socket io client", newHistory.Uuid)
 		wsClient.Send <- jsonBytes
 	} else {
 		fmt.Println("websocket client not connect,ignore..")

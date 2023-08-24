@@ -26,6 +26,7 @@ func (manager *WebSocketManager) Start() {
 			manager.Clients[client.Id] = client
 		case client := <-manager.Unregister:
 			if _, ok := manager.Clients[client.Id]; ok {
+				fmt.Println("unregister client -> ", client.Id)
 				delete(manager.Clients, client.Id)
 				close(client.Send)
 			}

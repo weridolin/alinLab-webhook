@@ -23,6 +23,7 @@ type QueryHistoryRequest struct {
 }
 
 type HistoryItem struct {
+	Updated	    string			  `json:"updated"`
 	Uuid        string            `json:"uuid"`
 	Header      map[string]string `json:"header"`
 	Raw         string            `json:"raw"`

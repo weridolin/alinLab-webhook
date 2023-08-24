@@ -79,6 +79,7 @@ func RegisterServiceToETCD(conf *config.Config) {
 		} else {
 			// 续约租约，如果租约已经过期将curLeaseId复位到0重新走创建租约的逻辑
 			if _, err := lease.KeepAliveOnce(context.TODO(), curLeaseId); err == rpctypes.ErrLeaseNotFound {
+				fmt.Println("lease not found, reset lease id to 0")
 				curLeaseId = 0
 				continue
 			}
