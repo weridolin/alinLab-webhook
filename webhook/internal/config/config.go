@@ -4,7 +4,8 @@ import "github.com/zeromicro/go-zero/rest"
 
 type Config struct {
 	rest.RestConf
-	DBUri          string
+	// DBUri          string
+	POSTGRESQLURI  string
 	MaxConnections int
 	EXPIRETIME     int
 	Etcd           struct {

@@ -18,7 +18,9 @@ Etcd:
     Ws: /site/withoutauth/webhook/ws
     SocketIO: /site/withoutauth/webhook/socketio
 
-DBUri: root:werido@tcp(8.131.78.84:3306)/simple_notification?charset=utf8mb4&parseTime=true
+# DBUri: root:werido@tcp(8.131.78.84:3306)/simple_notification?charset=utf8mb4&parseTime=true
+POSTGRESQLURI: "host=sitedb user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
 Logger:
   Level: debug
   ServiceName: alinLab-webhook

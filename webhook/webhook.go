@@ -92,7 +92,8 @@ func main() {
 	flag.Parse()
 
 	var c config.Config
-	conf.MustLoad(*configFile, &c)
+	option := conf.UseEnv()
+	conf.MustLoad(*configFile, &c, option)
 
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
