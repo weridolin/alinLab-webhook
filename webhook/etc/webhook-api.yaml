@@ -29,3 +29,11 @@ Logger:
 
 MaxConnections: 100 # 最大同时在线数目
 EXPIRETIME: 60 
+
+RabbitMq:
+  MQURI: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@${RABBITMQ_HOST}:5672/"
+  BroadcastTopic: site.alinlab.webhook
+  BroadcastExchange : site.alinlab.webhook.broadcast
+  BroadcastQueuePrefix : site.alinlab.webhook.
+
+UUID: ""

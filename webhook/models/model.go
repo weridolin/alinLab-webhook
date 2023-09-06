@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -33,10 +34,45 @@ func (j Dict) Value() (driver.Value, error) {
 	return json.Marshal(j)
 }
 
+type NativeTime struct {
+	time.Time
+}
+
+const timeFormat = "2006-01-02 15:04:05"
+
+func (t *NativeTime) Scan(v interface{}) error {
+	value, ok := v.(time.Time)
+	if ok {
+		t.Time = value
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to timestamp", v)
+}
+
+func (t NativeTime) Value() (driver.Value, error) {
+	return t.Time, nil
+}
+
+func (t *NativeTime) UnmarshalJSON(b []byte) error {
+	b = bytes.Trim(b, "\"")
+	ext, err := time.Parse(timeFormat, string(b))
+	if err != nil {
+		// do something
+		fmt.Print("un serialize time error:", err)
+	}
+	*t = NativeTime{ext}
+	return nil
+}
+
+func (t *NativeTime) MarshalJSON() ([]byte, error) {
+	var stamp = fmt.Sprintf("\"%s\"", time.Time(t.Time).Format(timeFormat))
+	return []byte(stamp), nil
+}
+
 type ResourceCalledHistory struct {
 	ID          uint           `gorm:"primarykey"`
-	CreatedAt   time.Time      `json:"created_at" format:"2006-01-02 15:04:05"`
-	UpdatedAt   time.Time      `json:"updated_at" format:"2006-01-02 15:04:05"`
+	CreatedAt   NativeTime     `json:"created_at" format:"2006-01-02 15:04:05"`
+	UpdatedAt   NativeTime     `json:"updated_at" format:"2006-01-02 15:04:05"`
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	Uuid        string         `gorm:"not null;type:varchar(36);comment:uuid" json:"uuid"` // uuid
 	Header      Dict           `gorm:"type:json;comment:请求头" json:"header"`
@@ -49,20 +85,20 @@ type ResourceCalledHistory struct {
 }
 
 // 自定义下序列化的格式
-func (r ResourceCalledHistory) MarshalJSON() ([]byte, error) {
-	// 定义一个该结构体的别名
-	type R ResourceCalledHistory
-	// 定义一个新的结构体
-	temp := struct {
-		R
-		UpdatedAt string `json:"updated_at"`
-		CreatedAt string `json:"created_at"`
-	}{
-		R:         (R)(r),
-		UpdatedAt: r.UpdatedAt.Format("2006-01-02 15:04:05"),
-	}
-	return json.Marshal(temp)
-}
+// func (r ResourceCalledHistory) MarshalJSON() ([]byte, error) {
+// 	// 定义一个该结构体的别名
+// 	type R ResourceCalledHistory
+// 	// 定义一个新的结构体
+// 	temp := struct {
+// 		R
+// 		UpdatedAt string `json:"updated_at"`
+// 		CreatedAt string `json:"created_at"`
+// 	}{
+// 		R:         (R)(r),
+// 		UpdatedAt: r.UpdatedAt.Format("2006-01-02 15:04:05"),
+// 	}
+// 	return json.Marshal(temp)
+// }
 
 func (ResourceCalledHistory) TableName() string {
 	return "alinlab_webhook_resource_called_history"
@@ -76,4 +112,16 @@ func QueryAllHistoryByUUid(uuid string, db *gorm.DB) ([]*ResourceCalledHistory, 
 	var history []*ResourceCalledHistory
 	err := db.Where("uuid = ?", uuid).Find(&history).Error
 	return history, err
+}
+
+type NotifyMessage struct {
+	ToUUID string `json:"to_uuid"`
+	ResourceCalledHistory
+}
+
+func CreateNotifyMessage(ToUUID string, history *ResourceCalledHistory) *NotifyMessage {
+	return &NotifyMessage{
+		ToUUID:                ToUUID,
+		ResourceCalledHistory: *history,
+	}
 }

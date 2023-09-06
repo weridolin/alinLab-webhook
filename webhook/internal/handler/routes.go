@@ -79,6 +79,5 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 		},
 	)
-	//历史记录查询
 
 }

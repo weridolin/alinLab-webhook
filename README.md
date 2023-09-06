@@ -11,3 +11,6 @@
 - 后端框架 go-zero 方便后期统一部署
 - orm: gorm
 - 通讯: http socketio
+
+# 注
+考虑到ws/socket io 不同节点下的转发的问题，引入rabbitmq作为转发的中间件

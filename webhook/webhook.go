@@ -10,11 +10,11 @@ import (
 	"github.com/weridolin/alinLab-webhook/webhook/internal/config"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/handler"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
-	"github.com/weridolin/site-gateway/tools"
-	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
-
+	rabbitmq "github.com/weridolin/alinLab-webhook/webhook/mq"
+	"github.com/weridolin/alinLab-webhook/webhook/utils"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -52,10 +52,10 @@ func RegisterServiceToETCD(conf *config.Config) {
 	var curLeaseId clientv3.LeaseID = 0
 
 	listenAddr := fmt.Sprintf("%s:%d", GeLocalIP(), conf.Port)
-	uuid := tools.GetUUID()
-	key := fmt.Sprintf("%s/%s", conf.Etcd.Key.Rest, uuid)
-	wsKey := fmt.Sprintf("%s/%s", conf.Etcd.Key.Ws, uuid)
-	socketioKey := fmt.Sprintf("%s/%s", conf.Etcd.Key.SocketIO, uuid)
+	// uuid := tools.GetUUID()
+	key := fmt.Sprintf("%s/%s", conf.Etcd.Key.Rest, conf.UUID)
+	wsKey := fmt.Sprintf("%s/%s", conf.Etcd.Key.Ws, conf.UUID)
+	socketioKey := fmt.Sprintf("%s/%s", conf.Etcd.Key.SocketIO, conf.UUID)
 
 	for {
 		if curLeaseId == 0 {
@@ -94,7 +94,7 @@ func main() {
 	var c config.Config
 	option := conf.UseEnv()
 	conf.MustLoad(*configFile, &c, option)
-
+	c.UUID = utils.GetUUID()
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
 
@@ -112,8 +112,22 @@ func main() {
 			fmt.Println("socketio listen error: %s\n", err)
 		}
 	}()
+
 	defer ctx.SocketIOServer.Close()
 	go ctx.SocketIOManager.Start()
+
+	// start rabbitmq consumer
+	RabbitMQClient := rabbitmq.NewRabbitMQTopic(
+		c.RabbitMq.BroadcastExchange,
+		c.RabbitMq.BroadcastTopic,
+		c.RabbitMq.MQURI,
+	)
+	go func() {
+		RabbitMQClient.SubscribeTopic(func(msg []byte) {
+			ctx.WebsocketManager.MQMsgReceive <- msg
+			ctx.SocketIOManager.MQMsgReceive <- msg
+		})
+	}()
 
 	// HTTP
 	go RegisterServiceToETCD(&c)

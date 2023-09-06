@@ -4,6 +4,7 @@ import (
 	s "github.com/googollee/go-socket.io"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/config"
 	"github.com/weridolin/alinLab-webhook/webhook/models"
+	rabbitmq "github.com/weridolin/alinLab-webhook/webhook/mq"
 	socketio "github.com/weridolin/alinLab-webhook/webhook/socketio"
 	"github.com/weridolin/alinLab-webhook/webhook/ws"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -12,11 +13,12 @@ import (
 )
 
 type ServiceContext struct {
-	Config           config.Config
-	DB               *gorm.DB
-	WebsocketManager *ws.WebSocketManager
-	SocketIOServer   *s.Server
-	SocketIOManager  *socketio.SocketIOConnectionManager
+	Config            config.Config
+	DB                *gorm.DB
+	WebsocketManager  *ws.WebSocketManager
+	SocketIOServer    *s.Server
+	SocketIOManager   *socketio.SocketIOConnectionManager
+	RabbitMqPublisher *rabbitmq.RabbitMQ
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -32,11 +34,13 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}
 	db.AutoMigrate(&models.ResourceCalledHistory{})
 	var socketIOManager = socketio.NewSocketIOConnectionManager()
+	var rabbitmqPublisher = rabbitmq.NewRabbitMQTopic(c.RabbitMq.BroadcastExchange, c.RabbitMq.BroadcastTopic, c.RabbitMq.MQURI)
 	return &ServiceContext{
-		Config:           c,
-		DB:               db,
-		WebsocketManager: ws.NewWebSocketManager(),
-		SocketIOServer:   socketio.NewSocketIoServer(socketIOManager),
-		SocketIOManager:  socketIOManager,
+		Config:            c,
+		DB:                db,
+		WebsocketManager:  ws.NewWebSocketManager(c),
+		SocketIOServer:    socketio.NewSocketIoServer(socketIOManager),
+		SocketIOManager:   socketIOManager,
+		RabbitMqPublisher: rabbitmqPublisher,
 	}
 }

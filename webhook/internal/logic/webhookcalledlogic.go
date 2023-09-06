@@ -78,36 +78,44 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 		fmt.Println("create history error:", err)
 	}
 
-	// 如果socket io已经建立连接，则发送这次调用结果
-	client, exist := l.svcCtx.SocketIOManager.Clients[req.Uuid]
-	if exist {
-		// 将结构体转换为JSON格式的字节切片
-		jsonBytes, err := json.Marshal(newHistory)
-		if err != nil {
-			fmt.Println("JSON编码失败:", err)
-		}
-		// 将JSON格式的字节切片转换为字符串
-		fmt.Println("send call record to socket io client", newHistory.Uuid)
-		jsonString := string(jsonBytes)
-		client.Conn.Emit("msg", jsonString)
-	} else {
-		fmt.Println("socket io client  not connect,ignore..")
+	notifyMsg := models.CreateNotifyMessage(req.Uuid, &newHistory)
+	// 推送广播消息到 mq
+	jsonBytes, err := json.Marshal(notifyMsg)
+	if err != nil {
+		fmt.Println("JSON编码失败:", err)
 	}
+	l.svcCtx.RabbitMqPublisher.PublishTopic(jsonBytes)
+
+	// 如果socket io已经建立连接，则发送这次调用结果
+	// client, exist := l.svcCtx.SocketIOManager.Clients[req.Uuid]
+	// if exist {
+	// 	// 将结构体转换为JSON格式的字节切片
+	// 	jsonBytes, err := json.Marshal(newHistory)
+	// 	if err != nil {
+	// 		fmt.Println("JSON编码失败:", err)
+	// 	}
+	// 	// 将JSON格式的字节切片转换为字符串
+	// 	fmt.Println("send call record to socket io client", newHistory.Uuid)
+	// 	jsonString := string(jsonBytes)
+	// 	client.Conn.Emit("msg", jsonString)
+	// } else {
+	// 	fmt.Println("socket io client  not connect,ignore..")
+	// }
 
 	// 如果websocket已经建立连接，则发送这次调用结果
-	wsClient, exist := l.svcCtx.WebsocketManager.Clients[req.Uuid]
-	if exist {
-		// 将结构体转换为JSON格式的字节切片
-		jsonBytes, err := json.Marshal(newHistory)
-		if err != nil {
-			fmt.Println("JSON编码失败:", err)
-		}
-		// 将JSON格式的字节切片转换为字符串
-		fmt.Println("send call record to socket io client", newHistory.Uuid)
-		wsClient.Send <- jsonBytes
-	} else {
-		fmt.Println("websocket client not connect,ignore..")
-	}
+	// wsClient, exist := l.svcCtx.WebsocketManager.Clients[req.Uuid]
+	// if exist {
+	// 	// 将结构体转换为JSON格式的字节切片
+	// 	jsonBytes, err := json.Marshal(newHistory)
+	// 	if err != nil {
+	// 		fmt.Println("JSON编码失败:", err)
+	// 	}
+	// 	// 将JSON格式的字节切片转换为字符串
+	// 	fmt.Println("send call record to socket io client", newHistory.Uuid)
+	// 	wsClient.Send <- jsonBytes
+	// } else {
+	// 	fmt.Println("websocket client not connect,ignore..")
+	// }
 
 	return
 }

@@ -16,4 +16,11 @@ type Config struct {
 			SocketIO string
 		}
 	}
+	RabbitMq struct {
+		MQURI                string
+		BroadcastTopic       string
+		BroadcastExchange    string
+		BroadcastQueuePrefix string
+	}
+	UUID string
 }
