@@ -37,3 +37,14 @@ RabbitMq:
   BroadcastQueuePrefix : site.alinlab.webhook.
 
 UUID: ""
+
+
+## 链路追踪
+Middlewares:
+  Trace: true
+  Metrics: true
+Telemetry:
+  Name: alinlab.webhook.http
+  Endpoint: http://jaeger:14268/api/traces
+  Batcher: jaeger
+  Sampler: 1.0
