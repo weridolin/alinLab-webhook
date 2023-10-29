@@ -19,7 +19,7 @@ Etcd:
     SocketIO: /site/withoutauth/webhook/socketio
 
 # DBUri: root:werido@tcp(8.131.78.84:3306)/simple_notification?charset=utf8mb4&parseTime=true
-POSTGRESQLURI: "host=sitedb user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+POSTGRESQLURI: "host=${SITEDB_SVC_NAME}.${SITEDB_SVC_NAME_NAMESPACE} user=${SITE_USER} password=${SITE_PASSWORD} dbname=${SITE_AUTH_DB} port=${SITEDB_SVC_NAME_PORT} sslmode=disable TimeZone=Asia/Shanghai"
 
 Logger:
   Level: debug
@@ -31,7 +31,7 @@ MaxConnections: 100 # 最大同时在线数目
 EXPIRETIME: 60 
 
 RabbitMq:
-  MQURI: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@${RABBITMQ_HOST}:5672/"
+  MQURI: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@${RABBITMQ_SVC_NAME}.${RABBITMQ_SVC_NAME_NAMESPACE}:${RABBITMQ_PORT}/"
   BroadcastTopic: site.alinlab.webhook
   BroadcastExchange : site.alinlab.webhook.broadcast
   BroadcastQueuePrefix : site.alinlab.webhook.
