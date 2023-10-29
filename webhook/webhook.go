@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"os"
 	"time"
 
 	"github.com/weridolin/alinLab-webhook/webhook/internal/config"
@@ -130,7 +131,9 @@ func main() {
 	}()
 
 	// HTTP
-	go RegisterServiceToETCD(&c)
+	if env := os.Getenv("K8S"); env != "1" {
+		go RegisterServiceToETCD(&c)
+	}
 
 	server.Start()
 }
