@@ -53,6 +53,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/webhook/api/v1/:uuid/history",
 				Handler: historyHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/webhook/api/v1/register-websocket",
+				Handler: RegisterWebsocketHandler(serverCtx),
+			},
 		},
 	)
 	//ws

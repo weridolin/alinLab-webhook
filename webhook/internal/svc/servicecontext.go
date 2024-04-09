@@ -33,14 +33,14 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		logx.Error(err)
 	}
 	db.AutoMigrate(&models.ResourceCalledHistory{})
-	var socketIOManager = socketio.NewSocketIOConnectionManager()
+	// var socketIOManager = socketio.NewSocketIOConnectionManager()
 	var rabbitmqPublisher = rabbitmq.NewRabbitMQTopic(c.RabbitMq.BroadcastExchange, c.RabbitMq.BroadcastTopic, c.RabbitMq.MQURI)
 	return &ServiceContext{
-		Config:            c,
-		DB:                db,
-		WebsocketManager:  ws.NewWebSocketManager(c),
-		SocketIOServer:    socketio.NewSocketIoServer(socketIOManager),
-		SocketIOManager:   socketIOManager,
+		Config: c,
+		DB:     db,
+		// WebsocketManager: ws.NewWebSocketManager(c),
+		// SocketIOServer:   socketio.NewSocketIoServer(socketIOManager),
+		// SocketIOManager:  socketIOManager,
 		RabbitMqPublisher: rabbitmqPublisher,
 	}
 }

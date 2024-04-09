@@ -20,6 +20,8 @@ Etcd:
 
 # DBUri: root:werido@tcp(8.131.78.84:3306)/simple_notification?charset=utf8mb4&parseTime=true
 POSTGRESQLURI: "host=${SITEDB_SVC_NAME}.${SITEDB_SVC_NAME_NAMESPACE} user=${SITE_USER} password=${SITE_PASSWORD} dbname=${SITE_AUTH_DB} port=${SITEDB_SVC_NAME_PORT} sslmode=disable TimeZone=Asia/Shanghai"
+# POSTGRESQLURI: "host=43.128.110.230 user=werido password=359066432 dbname=${SITE_AUTH_DB} port=30001 sslmode=disable TimeZone=Asia/Shanghai"
+
 
 Logger:
   Level: debug
@@ -32,9 +34,9 @@ EXPIRETIME: 60
 
 RabbitMq:
   MQURI: "amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@${RABBITMQ_SVC_NAME}.${RABBITMQ_SVC_NAME_NAMESPACE}:${RABBITMQ_PORT}/"
-  BroadcastTopic: site.alinlab.webhook
-  BroadcastExchange : site.alinlab.webhook.broadcast
-  BroadcastQueuePrefix : site.alinlab.webhook.
+  BroadcastTopic: site.alinlab.webhook.wsmessage
+  BroadcastExchange : site.rest-svc
+  BroadcastQueuePrefix : site.alinlab.webhook
 
 UUID: ""
 

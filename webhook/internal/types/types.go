@@ -2,7 +2,15 @@
 package types
 
 type Request struct {
-	Uuid string `path:"uuid"`
+	Uuid string `path:"uuid" json:"uuid" form:"uuid" validate:"required"`
+}
+
+type RegisterWebsocketRequest struct {
+	Uuid string `form:"uuid"`
+}
+
+type RegisterWebsocketResponse struct {
+	WebsocketUri string `json:"websocket_uri"`
 }
 
 type Response struct {

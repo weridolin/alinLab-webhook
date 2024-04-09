@@ -62,7 +62,7 @@ func NewRabbitMQTopic(exchangeName string, routingKey string, url string) *Rabbi
 }
 
 //话题模式发送消息
-func (r *RabbitMQ) PublishTopic(message []byte) {
+func (r *RabbitMQ) PublishTopic(topic string, message []byte) {
 	//1.尝试创建交换机
 	err := r.channel.ExchangeDeclare(
 		r.Exchange,
@@ -78,17 +78,28 @@ func (r *RabbitMQ) PublishTopic(message []byte) {
 	r.failOnErr(err, "Failed to declare an excha"+"nge")
 
 	//2.发送消息
-	fmt.Println("send message:", string(message), "to exchange:", r.Exchange, "with key:", r.Key)
-	err = r.channel.Publish(
-		r.Exchange,
-		//要设置
-		r.Key,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        message,
-		})
+	fmt.Println("send message:", string(message), "to exchange:", r.Exchange, "with topic:", topic)
+
+	// 尝试发送20次，直到成功
+	for i := 0; i < 20; i++ {
+		err = r.channel.Publish(
+			r.Exchange,
+			//要设置
+			topic,
+			true,
+			false,
+			amqp.Publishing{
+				ContentType:  "text/plain",
+				Body:         message,
+				DeliveryMode: amqp.Persistent,
+			})
+		if err == nil {
+			break
+		} else {
+			fmt.Println("Failed to publish a message , retry...  err ->", err)
+		}
+
+	}
 }
 
 //话题模式接受消息

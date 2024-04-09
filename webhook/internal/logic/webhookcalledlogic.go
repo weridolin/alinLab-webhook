@@ -78,13 +78,21 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 		fmt.Println("create history error:", err)
 	}
 
-	notifyMsg := models.CreateNotifyMessage(req.Uuid, &newHistory)
+	notifyMsg := struct {
+		from_app string
+		models.ResourceCalledHistory
+	}{
+		from_app:              "site.alinlab.gpt",
+		ResourceCalledHistory: newHistory,
+	}
 	// 推送广播消息到 mq
 	jsonBytes, err := json.Marshal(notifyMsg)
 	if err != nil {
 		fmt.Println("JSON编码失败:", err)
 	}
-	l.svcCtx.RabbitMqPublisher.PublishTopic(jsonBytes)
+
+	topic := fmt.Sprintf("%s.%s", l.svcCtx.Config.RabbitMq.BroadcastTopic, req.Uuid)
+	l.svcCtx.RabbitMqPublisher.PublishTopic(topic, jsonBytes)
 
 	// 如果socket io已经建立连接，则发送这次调用结果
 	// client, exist := l.svcCtx.SocketIOManager.Clients[req.Uuid]

@@ -11,7 +11,6 @@ import (
 	"github.com/weridolin/alinLab-webhook/webhook/internal/config"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/handler"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
-	rabbitmq "github.com/weridolin/alinLab-webhook/webhook/mq"
 	"github.com/weridolin/alinLab-webhook/webhook/utils"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
@@ -105,30 +104,30 @@ func main() {
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
 
 	// WEBSOCKET
-	go ctx.WebsocketManager.Start()
+	// go ctx.WebsocketManager.Start()
 
-	// socket.io
-	go func() {
-		if err := ctx.SocketIOServer.Serve(); err != nil {
-			fmt.Println("socketio listen error: %s\n", err)
-		}
-	}()
+	// // socket.io
+	// go func() {
+	// 	if err := ctx.SocketIOServer.Serve(); err != nil {
+	// 		fmt.Println("socketio listen error: %s\n", err)
+	// 	}
+	// }()
 
-	defer ctx.SocketIOServer.Close()
-	go ctx.SocketIOManager.Start()
+	// defer ctx.SocketIOServer.Close()
+	// go ctx.SocketIOManager.Start()
 
 	// start rabbitmq consumer
-	RabbitMQClient := rabbitmq.NewRabbitMQTopic(
-		c.RabbitMq.BroadcastExchange,
-		c.RabbitMq.BroadcastTopic,
-		c.RabbitMq.MQURI,
-	)
-	go func() {
-		RabbitMQClient.SubscribeTopic(func(msg []byte) {
-			ctx.WebsocketManager.MQMsgReceive <- msg
-			ctx.SocketIOManager.MQMsgReceive <- msg
-		})
-	}()
+	// RabbitMQClient := rabbitmq.NewRabbitMQTopic(
+	// 	c.RabbitMq.BroadcastExchange,
+	// 	c.RabbitMq.BroadcastTopic,
+	// 	c.RabbitMq.MQURI,
+	// )
+	// go func() {
+	// 	RabbitMQClient.SubscribeTopic(func(msg []byte) {
+	// 		ctx.WebsocketManager.MQMsgReceive <- msg
+	// 		ctx.SocketIOManager.MQMsgReceive <- msg
+	// 	})
+	// }()
 
 	// HTTP
 	if env := os.Getenv("K8S"); env != "1" {
