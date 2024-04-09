@@ -43,7 +43,7 @@ func (l *RegisterWebsocketLogic) RegisterWebsocket(req *types.RegisterWebsocketR
 		jwtKey = "DEBUGJWTKEY"
 	}
 	token := utils.GenToken(req.Uuid, jwtKey)
-	websocket_uri := "wss://" + r.Host + "/ws-endpoint/api/v1/?token=" + token
+	websocket_uri := "wss://" + "www.weridolin.cn" + "/ws-endpoint/api/v1/?token=" + token
 	return &types.RegisterWebsocketResponse{
 		WebsocketUri: websocket_uri,
 	}, nil
