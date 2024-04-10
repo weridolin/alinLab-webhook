@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/weridolin/alinLab-webhook/webhook/internal/svc"
 	"github.com/weridolin/alinLab-webhook/webhook/internal/types"
@@ -78,13 +79,21 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 		fmt.Println("create history error:", err)
 	}
 
+	now := time.Now()
+	// 延后一天
+	tomorrow := now.Add(24 * time.Hour)
+	// 转换为 Unix 时间戳（秒）
+	tomorrowTimestamp := tomorrow.Unix()
+
 	notifyMsg := struct {
 		FromApp     string `json:"from_app"`
 		WebsocketId string `json:"websocket_id"`
+		exp         int64  `json:"exp"`
 		models.ResourceCalledHistory
 	}{
 		FromApp:               "site.alinlab.gpt",
 		WebsocketId:           req.Uuid,
+		exp:                   tomorrowTimestamp,
 		ResourceCalledHistory: newHistory,
 	}
 	// 推送广播消息到 mq
