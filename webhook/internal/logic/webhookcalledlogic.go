@@ -79,10 +79,12 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 	}
 
 	notifyMsg := struct {
-		from_app string
+		FromApp     string `json:"from_app"`
+		WebsocketId string `json:"websocket_id"`
 		models.ResourceCalledHistory
 	}{
-		from_app:              "site.alinlab.gpt",
+		FromApp:               "site.alinlab.gpt",
+		WebsocketId:           req.Uuid,
 		ResourceCalledHistory: newHistory,
 	}
 	// 推送广播消息到 mq
