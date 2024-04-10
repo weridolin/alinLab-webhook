@@ -91,7 +91,7 @@ func (l *WebhookCalledLogic) WebhookCalled(req *types.Request, r *http.Request) 
 		exp         int64  `json:"exp"`
 		models.ResourceCalledHistory
 	}{
-		FromApp:               "site.alinlab.gpt",
+		FromApp:               "site.alinlab.webhook",
 		WebsocketId:           req.Uuid,
 		exp:                   tomorrowTimestamp,
 		ResourceCalledHistory: newHistory,
